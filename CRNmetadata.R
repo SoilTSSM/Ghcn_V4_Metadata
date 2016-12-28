@@ -326,12 +326,10 @@ CRN <- CRN %>% select(Station_Id,Name,Longitude, Latitude,Elevation,DEM1km,Dista
                       Airport_Lon,Airport_Lat,Airport_Lon2,Airport_Lat2,Lights)
 
 
-CRN <- CRN %>% mutate(WaterArea= round(WaterArea,2),
-                      UrbanArea10K=round(UrbanArea10K,2),
-                      GPwV4_Area =round(GPwV4_Area,2),
-                      GPwV4_00 =round(GPwV4_00,2),
-                      GPwV4_05
-                      )
+write.csv(CRN, "CRN_Metadata_Final.csv") 
+
+
+ 
 
 
 
