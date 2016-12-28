@@ -16,6 +16,8 @@ Inventory <- "ghcnm.tavg.v4.b.1.20161221.qcu.inv"
 
 Inventory <- file.path(Drive,Folder,Inventory)
 
+crninv    <- "F:\\Ghcn_v4_Metadata\\Crn.csv" 
+
 ####################  Population related GPW V3
 GPW90 <- "F:\\Metadata\\gl_gpwv3_pcount_90_bil_25\\glp90ag.bil"
 GPW00 <-  "F:\\Metadata\\gl_gpwv3_pcount_00_bil_25\\glp00ag.bil"
@@ -49,3 +51,8 @@ MAX_LST <-"F:\\Ghcn_v4_Metadata\\sdei-global-summer-lst-2013-global\\sdei-global
 MIN_LST <- "F:\\Ghcn_v4_Metadata\\sdei-global-summer-lst-2013-global\\sdei-global-summer-lst-2013-global\\sdei-global-summer-lst-2013-night-min-global.tif"
 
 UHI_SHP <-"uhishp"
+
+
+esaland <-"F:\\Ghcn_v4_Metadata\\EsaLandCover\\ESACCI-LC-L4-LCCS-Map-300m-P5Y-2010-v1.6.1.tif\\ESACCI-LC-L4-LCCS-Map-300m-P5Y-2010-v1.6.1.tif"
+
+esatype <-"F:\\Ghcn_v4_Metadata\\EsaLandCover\\ESACCI-LC-Legend.csv"

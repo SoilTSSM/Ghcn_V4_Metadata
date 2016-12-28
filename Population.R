@@ -3,7 +3,7 @@
 
 source("libraries.R")
 source("filenames.R")
-source("getInventory.R")
+ 
 
 GHCN <- getInventory(Inventory)
 
@@ -294,18 +294,7 @@ GHCN <- merge(GHCN,ltype, by.x="Landform",by.y="Value",all.x=TRUE)
 write.csv(GHCN, "GHCN_POP_Cities_Airport_DEM_Landform.csv") 
  
 
-lstMax <- raster(MAX_LST)
-
-lstsummermax <-  raster::extract(lstMax, lonlat)
-
-GHCN <- GHCN %>% mutate(LST_Max = lstsummermax)
-####  Add water Fraction.
-
-lstMin <- raster(MIN_LST)
-
-lstsummermin <-  raster::extract(lstMin, lonlat)
-
-GHCN <- GHCN %>% mutate(LST_Min = lstsummermin)
+ 
 
 
 UHISHP <- readOGR("uhishp",layer="sdei-global-uhi-2013")
@@ -330,6 +319,86 @@ GHCN <- GHCN %>% mutate(UrbanArea = UHI$SQKM_FINAL,Urban_ES00Pop=UHI$ES00POP,
 
 
 write.csv(GHCN, "GHCN_POP_Cities_Airport_DEM_Landform_LST.csv") 
+
+
+
+LC <- raster(esaland)
+lctype <- read.csv(esatype,header=T, stringsAsFactors = FALSE,sep =";")
+
+lctype <- lctype[, c("NB_LAB","LCCOwnLabel")]
+
+LandCover <- raster::extract(LC, lonlat)
+
+GHCN <- GHCN %>% mutate(Landcover=LandCover)
+
+GHCN <- merge(GHCN, lctype, by.x= "Landcover", by.y = "NB_LAB", all.x=TRUE)
+
+
+GHCN <- GHCN %>% mutate(WaterArea=NA, UrbanArea10K=NA)
+
+
+LatDistance <- 111
+dTr <- pi/180
+
+for(l in 1:nrow(GHCN)){
+  print(l)
+  
+  LonDistance <- LatDistance* cos(CRN$Latitude[l]*dTr)
+  Mult        <-LatDistance/LonDistance
+  LatBump10   <- .2
+  LonBump10   <- LatBump10*Mult
+  if(GHCN$Latitude[l]-LatBump10 > -90){
+  E10         <-extent(GHCN$Longitude[l]-LonBump10,GHCN$Longitude[l]+LonBump10,
+                       GHCN$Latitude[l]-LatBump10,GHCN$Latitude[l]+LatBump10)
+  } else{
+    E10         <-extent(-180,180,
+                         -90,GHCN$Latitude[l]+LatBump10)
+    
+  }
+  
+  
+  K <-  crop(LC,E10)
+  A <-  area(K)
+  ##  Water=210
+  ##  Urban = 190
+  W <- reclassify(K,rcl = c(-Inf,209,0,209.5,210.5,1,210.5,+Inf,0))
+  U <- reclassify(K,rcl = c(-Inf,189,0,189.5,190.5,1,190.5,+Inf,0))
+  W <- W*A
+  U <- U*A
+  GHCN$WaterArea[l] <- raster::extract(W, cbind(GHCN$Longitude[l],GHCN$Latitude[l]), buffer=10000, fun = sum)
+  GHCN$UrbanArea10K[l] <- raster::extract(U, cbind(GHCN$Longitude[l],GHCN$Latitude[l]), buffer=10000, fun = sum)
+  
+  
+  
+}
+
+####  Add Urban Fraction
+
+write.csv(CRN, "CRN_m1.csv") 
+#####  Night Lights
+
+####  Physical Geo graphy
+####  Land Cover
+####  Population
+####  Urban Areas
+####  Airports
+####  Nightlights
+#CRN <- CRN %>% mutate(Airport_Type=NA,Airport_Lon=NA,Airport_Lat=NA, Airport_Name=NA,Airport_Dist=NA)
+
+
+CRN <- CRN %>% mutate(GPW10km_15_Density = GPwV4_15_10km/GPWV4_Area10)
+
+CRN <- CRN %>% select(Station_Id,Name,Longitude, Latitude,Elevation,DEM1km,DistancetoCoast, LCCOwnLabel,EF_LF_Desc,
+                      WaterArea,UrbanArea10K,GPwV4_Area,GPwV4_00,GPwV4_05,GPwV4_10,GPwV4_15,GPWV4_Area10,
+                      GPwV4_15_10km, Hyde_Area,
+                      Hyde1970,Hyde1980,Hyde1990,Hyde2000,Hyde2005,GpwV4_density00,Hyde_density00,
+                      GPW10km_15_Density,EST_POP2000,EST_POP2000_50K,DistanceToPlace,DistanceToPlace50K,
+                      PopulatedPlace,PopulatedPlace50K,Populated_Lon,Populated_Lat,Populated_Lon50K,
+                      Populated_Lat50K,Urban_ES00Pop,UrbanArea,UrbanAreaName,UrbanLon,UrbanLat,
+                      UrbanDailyMean,BufferDailyMean,UrbanNightMean,BufferNightMean,UrbanRuralDailyDiff,UrbanRuralNightDiff,
+                      Airport_Dist,Airport_Dist2,Airport_Name,Airport_Name2,Airport_Type,Airport_Type2,
+                      Airport_Lon,Airport_Lat,Airport_Lon2,Airport_Lat2,Lights)
+
 
 
 
