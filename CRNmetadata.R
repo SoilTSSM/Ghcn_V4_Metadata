@@ -258,8 +258,10 @@ LC <- raster(esaland)
 lctype <- read.csv(esatype,header=T, stringsAsFactors = FALSE,sep =";")
 
 lctype <- lctype[, c("NB_LAB","LCCOwnLabel")]
+ 
 
 LandCover <- raster::extract(LC, lonlat)
+LandCover[is.na(LandCover)]<-0
 
 CRN <- CRN %>% mutate(Landcover=LandCover)
 
