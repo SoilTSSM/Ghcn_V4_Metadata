@@ -143,7 +143,7 @@ for(s in 1:nrow(CRN)){
   CRN$PopulatedPlace300K[s]<-S300$SCHNM[o[1]]
   CRN$Populated_Lon300K[s]<-S300$LONGITUDE[o[1]]
   CRN$Populated_Lat300K[s]<-S300$LATITUDE[o[1]]
-  CRN$EST_POP2000_300K[s]   <-S300$ES000POP[o[1]]
+  CRN$EST_POP2000_300K[s]   <-S300$ES00POP[o[1]]
   
   CRN$DistanceToPlace300K[s]<- dist[o[1]]
   
