@@ -7,7 +7,8 @@ source("getInventory.R")
 
 CRN <- tbl_df(read.csv(crninv,header=TRUE, stringsAsFactors =F ))
 
-CRN <- CRN %>% select(WBAN,Name,Lon,Lat,ELEVATION) %>% rename(Latitude=Lat,Longitude=Lon,Elevation=ELEVATION,Station_Id=WBAN)
+CRN <- CRN %>% select(WBAN,Name,Lon,Lat,ELEVATION) %>% 
+  rename(Latitude=Lat,Longitude=Lon,Elevation=ELEVATION,Station_ID=WBAN)
 
  
 
@@ -307,7 +308,7 @@ for(l in 1:nrow(CRN)){
 
 CRN <- CRN %>% mutate(GPW10km_15_Density = GPwV4_15_10km/GPWV4_Area10)
 
-CRN <- CRN %>% select(Station_Id,Name,Longitude, Latitude,Elevation,DEM1km,DistancetoCoast, LCCOwnLabel,EF_LF_Desc,
+CRN <- CRN %>% select(Station_ID,Name,Longitude, Latitude,Elevation,DEM1km,DistancetoCoast, LCCOwnLabel,EF_LF_Desc,
                       WaterArea,UrbanArea10K,GPwV4_Area,GPwV4_00,GPwV4_05,GPwV4_10,GPwV4_15,GPWV4_Area10,
                       GPwV4_15_10km, Hyde_Area,
                       Hyde1970,Hyde1980,Hyde1990,Hyde2000,Hyde2005,GpwV4_density00,Hyde_density00,
