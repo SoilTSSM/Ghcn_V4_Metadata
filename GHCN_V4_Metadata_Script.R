@@ -163,6 +163,32 @@ for(s in 1:nrow(GHCN)){
 }
 
 
+S300 <- Settlement[Settlement$ES00POP > 299999,]
+
+
+GHCN <- GHCN %>% mutate(PopulatedPlace300K=NA,Populated_Lon300K=NA,Populated_Lat300K=NA, EST_POP2000_300K=NA,DistanceToPlace300K=NA)
+
+
+for(s in 1:nrow(GHCN)){
+  
+  print(s)
+  icoords <- cbind(GHCN$Longitude[s],GHCN$Latitude[s])
+  bcoords <- cbind(S300$LONGITUDE,S300$LATITUDE)
+  dist    <- spDistsN1(bcoords,icoords,longlat=TRUE)
+  o       <-order(dist,decreasing=FALSE)
+  
+  GHCN$PopulatedPlace300K[s]<-S300$SCHNM[o[1]]
+  GHCN$Populated_Lon300K[s]<-S300$LONGITUDE[o[1]]
+  GHCN$Populated_Lat300K[s]<-S300$LATITUDE[o[1]]
+  GHCN$EST_POP2000_300K[s]   <-S300$ES00POP[o[1]]
+  
+  GHCN$DistanceToPlace300K[s]<- dist[o[1]]
+  
+  
+}
+
+
+
 write.csv(GHCN, "GHCN_V4_Population_Cities.csv")
 
 
@@ -396,14 +422,15 @@ write.csv(GHCN, "GHCN_POP_Cities_Airport_DEM_Landform_LST_LandCover_WaterArea.cs
 
 GHCN <- GHCN %>% mutate(GPW10km_15_Density = GPwV4_15_10km/GPWV4_Area10)
 
+ 
+
 GHCN <- GHCN %>% select(Station_ID,Name,Longitude, Latitude,Elevation,DEM1km,DistancetoCoast, LCCOwnLabel,EF_LF_Desc,
                       WaterArea,UrbanArea10K,GPwV4_Area,GPwV4_00,GPwV4_05,GPwV4_10,GPwV4_15,GPWV4_Area10,
                       GPwV4_15_10km, Hyde_Area,
                       Hyde1970,Hyde1980,Hyde1990,Hyde2000,Hyde2005,GpwV4_density00,Hyde_density00,
-                      GPW10km_15_Density,EST_POP2000,EST_POP2000_50K,DistanceToPlace,DistanceToPlace50K,
-                      PopulatedPlace,PopulatedPlace50K,Populated_Lon,Populated_Lat,Populated_Lon50K,
-                      Populated_Lat50K,Urban_ES00Pop,UrbanArea,UrbanAreaName,UrbanLon,UrbanLat,
-                      UrbanDailyMean,BufferDailyMean,UrbanNightMean,BufferNightMean,UrbanRuralDailyDiff,UrbanRuralNightDiff,
+                      GPW10km_15_Density,EST_POP2000,EST_POP2000_50K,EST_POP2000_300K,DistanceToPlace,DistanceToPlace50K,
+                      DistanceToPlace300K,PopulatedPlace,PopulatedPlace50K,PopulatedPlace300K,Populated_Lon,Populated_Lat,Populated_Lon50K,
+                      Populated_Lat50K,Populated_Lon300K,Populated_Lat300K,  
                       Airport_Dist,Airport_Dist2,Airport_Name,Airport_Name2,Airport_Type,Airport_Type2,
                       Airport_Lon,Airport_Lat,Airport_Lon2,Airport_Lat2,Lights)
 
