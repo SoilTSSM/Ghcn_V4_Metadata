@@ -126,7 +126,29 @@ for(s in 1:nrow(CRN)){
   
 }
 
+S300 <- Settlement[Settlement$ES00POP > 299999,]
 
+
+CRN <- CRN %>% mutate(PopulatedPlace300K=NA,Populated_Lon300K=NA,Populated_Lat300K=NA, EST_POP2000_300K=NA,DistanceToPlace300K=NA)
+
+
+for(s in 1:nrow(CRN)){
+  
+  print(s)
+  icoords <- cbind(CRN$Longitude[s],CRN$Latitude[s])
+  bcoords <- cbind(S300$LONGITUDE,S300$LATITUDE)
+  dist    <- spDistsN1(bcoords,icoords,longlat=TRUE)
+  o       <-order(dist,decreasing=FALSE)
+  
+  CRN$PopulatedPlace300K[s]<-S300$SCHNM[o[1]]
+  CRN$Populated_Lon300K[s]<-S300$LONGITUDE[o[1]]
+  CRN$Populated_Lat300K[s]<-S300$LATITUDE[o[1]]
+  CRN$EST_POP2000_300K[s]   <-S300$ES000POP[o[1]]
+  
+  CRN$DistanceToPlace300K[s]<- dist[o[1]]
+  
+  
+}
  
 
 
@@ -216,7 +238,7 @@ CRN <- CRN %>% mutate(DEM1km = elv)
 
 TOPOGRAPHY <-raster(Topo)
 ltype <-read.dbf(TopoTbl)
-ltype <- ltype[,c("Value", "EF_LF_Desc","ELU_GLC_De" )]
+ltype <- ltype[,c("Value", "EF_LF_Desc" )]
  
 LonLat <- CRN[,c("Longitude","Latitude")]
 coordinates(LonLat)<- ~Longitude+Latitude
@@ -230,28 +252,7 @@ CRN <- merge(CRN,ltype, by.x="Landform",by.y="Value",all.x=TRUE)
  
  
 
-UHISHP <- readOGR("uhishp",layer="sdei-global-uhi-2013")
  
- 
-
-
-LonLat <- CRN[,c("Longitude","Latitude")]
-coordinates(LonLat)<- ~Longitude+Latitude
-proj4string(LonLat)<-proj4string(UHISHP)
-
-
-UHI <- over(LonLat,UHISHP)
- 
-CRN <- CRN %>% mutate(UrbanArea = UHI$SQKM_FINAL,Urban_ES00Pop=UHI$ES00POP,
-                        UrbanDailyMean=UHI$URB_D_MEAN,UrbanNightMean=UHI$BUF_N_MEAN,
-                        BufferDailyMean=UHI$BUF_D_MEAN,BufferNightMean=UHI$BUF_N_MEAN,
-                        UrbanRuralDailyDiff=UHI$D_T_DIFF,UrbanRuralNightDiff=UHI$N_T_DIFF,
-                        UrbanAreaName=UHI$NAME, UrbanLon=UHI$LONGITUDE,UrbanLat=UHI$LATITUDE)
-
-
-
-
-write.csv(CRN, "CRN_m1.csv") 
 
 
 LC <- raster(esaland)
@@ -302,17 +303,7 @@ for(l in 1:nrow(CRN)){
 
 ####  Add Urban Fraction
 
-write.csv(CRN, "CRN_m1.csv") 
-#####  Night Lights
-
-####  Physical Geo graphy
-####  Land Cover
-####  Population
-####  Urban Areas
-####  Airports
-####  Nightlights
-#CRN <- CRN %>% mutate(Airport_Type=NA,Airport_Lon=NA,Airport_Lat=NA, Airport_Name=NA,Airport_Dist=NA)
-
+ 
 
 CRN <- CRN %>% mutate(GPW10km_15_Density = GPwV4_15_10km/GPWV4_Area10)
 
@@ -320,10 +311,9 @@ CRN <- CRN %>% select(Station_Id,Name,Longitude, Latitude,Elevation,DEM1km,Dista
                       WaterArea,UrbanArea10K,GPwV4_Area,GPwV4_00,GPwV4_05,GPwV4_10,GPwV4_15,GPWV4_Area10,
                       GPwV4_15_10km, Hyde_Area,
                       Hyde1970,Hyde1980,Hyde1990,Hyde2000,Hyde2005,GpwV4_density00,Hyde_density00,
-                      GPW10km_15_Density,EST_POP2000,EST_POP2000_50K,DistanceToPlace,DistanceToPlace50K,
-                      PopulatedPlace,PopulatedPlace50K,Populated_Lon,Populated_Lat,Populated_Lon50K,
-                      Populated_Lat50K,Urban_ES00Pop,UrbanArea,UrbanAreaName,UrbanLon,UrbanLat,
-                      UrbanDailyMean,BufferDailyMean,UrbanNightMean,BufferNightMean,UrbanRuralDailyDiff,UrbanRuralNightDiff,
+                      GPW10km_15_Density,EST_POP2000,EST_POP2000_50K,EST_POP2000_300K,DistanceToPlace,DistanceToPlace50K,
+                      DistanceToPlace300K,PopulatedPlace,PopulatedPlace50K,PopulatedPlace300K,Populated_Lon,Populated_Lat,Populated_Lon50K,
+                      Populated_Lat50K,Populated_Lon300K,Populated_Lat300K,  
                       Airport_Dist,Airport_Dist2,Airport_Name,Airport_Name2,Airport_Type,Airport_Type2,
                       Airport_Lon,Airport_Lat,Airport_Lon2,Airport_Lat2,Lights)
 
