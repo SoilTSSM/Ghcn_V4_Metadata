@@ -77,7 +77,7 @@ write.csv(GHCN, "GHCN_V4_Population.csv")
 Settlement <- read.csv(GrumpCites,stringsAsFactors=F)
 
 
-GHCN <- GHCN %>% mutate(PopulatedPlace=NA,Populated_Lon=NA,Populated_Lat=NA,Populated_Type=NA,EST_POP2000=NA,DistanceToPlace=NA)
+GHCN <- GHCN %>% mutate(PopulatedPlace=NA,EST_POP2000=NA,DistanceToPlace=NA)
 
 
 for(s in 1:nrow(GHCN)){
@@ -89,59 +89,22 @@ for(s in 1:nrow(GHCN)){
   o       <-order(dist,decreasing=FALSE)
   
   GHCN$PopulatedPlace[s]<-Settlement$SCHNM[o[1]]
-  GHCN$Populated_Lon[s]<-Settlement$LONGITUDE[o[1]]
-  GHCN$Populated_Lat[s]<-Settlement$LATITUDE[o[1]]
+  
   GHCN$EST_POP2000[s]   <-Settlement$ES00POP[o[1]]
-  GHCN$Populated_Type[s]<- Settlement$URBORRUR[o[1]]
+ 
   GHCN$DistanceToPlace[s]<- dist[o[1]]
   
   
 }
 
-
-GeoCity <- read.delim(GeoNameCities,stringsAsFactors = FALSE, header=F)
-
-GeoCity <- GeoCity[ ,c(3,5,6,8,9,15,19)]
-
-colnames(GeoCity)<-c("GeoPlace","GeoLat","GeoLon","FeatureCode","CountryCode","GeoPop","GeoUpdateDate")
-
-GeoCity <- GeoCity[!is.na(GeoCity$GeoPop),]
-
-GeoCity <- GeoCity[GeoCity$GeoPop >0,]
-
-GeoCity$GeoLat <- as.numeric(GeoCity$GeoLat)
-GeoCity$GeoLon <- as.numeric(GeoCity$GeoLon)
-
-GHCN <- GHCN %>% mutate(GeoPlace=NA,Geo_Lon=NA,Geo_Lat=NA,FeatureCode=NA,GeoPop=NA,GeoUpdateDate=NA,DistanceToGeoPlace=NA)
-
-
-
-for(s in 1:nrow(GHCN)){
-  
-  print(s)
-  icoords <- cbind(GHCN$Longitude[s],GHCN$Latitude[s])
-  bcoords <- cbind(GeoCity$GeoLon,GeoCity$GeoLat)
-  dist    <- spDistsN1(bcoords,icoords,longlat=TRUE)
-  o       <-order(dist,decreasing=FALSE)
-  
-  GHCN$GeoPlace[s]<-GeoCity$GeoPlace[o[1]]
-  GHCN$Geo_Lon[s]<-GeoCity$GeoLon[o[1]]
-  GHCN$Geo_Lat[s]<-GeoCity$GeoLat[o[1]]
-  GHCN$FeatureCode[s]   <-GeoCity$FeatureCode[o[1]]
-  GHCN$GeoPop[s]<- GeoCity$GeoPop[o[1]]
-  
-  GHCN$GeoUpdateDate[s]<- GeoCity$GeoUpdateDate[o[1]]
-  GHCN$DistanceToGeoPlace[s]<- dist[o[1]]
-  
-  
-}
+ 
 
 
 
 S50 <- Settlement[Settlement$ES00POP > 49999,]
 
 
-GHCN <- GHCN %>% mutate(PopulatedPlace50K=NA,Populated_Lon50K=NA,Populated_Lat50K=NA, EST_POP2000_50K=NA,DistanceToPlace50K=NA)
+GHCN <- GHCN %>% mutate(PopulatedPlace50K=NA, EST_POP2000_50K=NA,DistanceToPlace50K=NA)
 
 
 for(s in 1:nrow(GHCN)){
@@ -153,8 +116,7 @@ for(s in 1:nrow(GHCN)){
   o       <-order(dist,decreasing=FALSE)
   
   GHCN$PopulatedPlace50K[s]<-S50$SCHNM[o[1]]
-  GHCN$Populated_Lon50K[s]<-S50$LONGITUDE[o[1]]
-  GHCN$Populated_Lat50K[s]<-S50$LATITUDE[o[1]]
+  
   GHCN$EST_POP2000_50K[s]   <-S50$ES00POP[o[1]]
    
   GHCN$DistanceToPlace50K[s]<- dist[o[1]]
@@ -163,34 +125,78 @@ for(s in 1:nrow(GHCN)){
 }
 
 
-S300 <- Settlement[Settlement$ES00POP > 299999,]
+S500 <- Settlement[Settlement$ES00POP > 499999,]
 
 
-GHCN <- GHCN %>% mutate(PopulatedPlace300K=NA,Populated_Lon300K=NA,Populated_Lat300K=NA, EST_POP2000_300K=NA,DistanceToPlace300K=NA)
+GHCN <- GHCN %>% mutate(PopulatedPlace500K=NA, EST_POP2000_500K=NA,DistanceToPlace500K=NA)
 
 
 for(s in 1:nrow(GHCN)){
   
   print(s)
   icoords <- cbind(GHCN$Longitude[s],GHCN$Latitude[s])
-  bcoords <- cbind(S300$LONGITUDE,S300$LATITUDE)
+  bcoords <- cbind(S500$LONGITUDE,S500$LATITUDE)
   dist    <- spDistsN1(bcoords,icoords,longlat=TRUE)
   o       <-order(dist,decreasing=FALSE)
   
-  GHCN$PopulatedPlace300K[s]<-S300$SCHNM[o[1]]
-  GHCN$Populated_Lon300K[s]<-S300$LONGITUDE[o[1]]
-  GHCN$Populated_Lat300K[s]<-S300$LATITUDE[o[1]]
-  GHCN$EST_POP2000_300K[s]   <-S300$ES00POP[o[1]]
+  GHCN$PopulatedPlace500K[s]<-S500$SCHNM[o[1]]
   
-  GHCN$DistanceToPlace300K[s]<- dist[o[1]]
+  GHCN$EST_POP2000_500K[s]   <-S500$ES00POP[o[1]]
+  
+  GHCN$DistanceToPlace500K[s]<- dist[o[1]]
   
   
 }
 
 
+S1M <- Settlement[Settlement$ES00POP > 999999,]
 
-write.csv(GHCN, "GHCN_V4_Population_Cities.csv")
 
+GHCN <- GHCN %>% mutate(PopulatedPlace1M=NA,  EST_POP2000_1M=NA,DistanceToPlace1M=NA)
+
+
+for(s in 1:nrow(GHCN)){
+  
+  print(s)
+  icoords <- cbind(GHCN$Longitude[s],GHCN$Latitude[s])
+  bcoords <- cbind(S1M$LONGITUDE,S1M$LATITUDE)
+  dist    <- spDistsN1(bcoords,icoords,longlat=TRUE)
+  o       <-order(dist,decreasing=FALSE)
+  
+  GHCN$PopulatedPlace1M[s]<-S1M$SCHNM[o[1]]
+  
+  GHCN$EST_POP2000_1M[s]   <-S1M$ES00POP[o[1]]
+  
+  GHCN$DistanceToPlace1M[s]<- dist[o[1]]
+  
+  
+}
+
+S5M <- Settlement[Settlement$ES00POP > 4999999,]
+
+
+GHCN <- GHCN %>% mutate(PopulatedPlace5M=NA,  EST_POP2000_5M=NA,DistanceToPlace5M=NA)
+
+
+for(s in 1:nrow(GHCN)){
+  
+  print(s)
+  icoords <- cbind(GHCN$Longitude[s],GHCN$Latitude[s])
+  bcoords <- cbind(S5M$LONGITUDE,S5M$LATITUDE)
+  dist    <- spDistsN1(bcoords,icoords,longlat=TRUE)
+  o       <-order(dist,decreasing=FALSE)
+  
+  GHCN$PopulatedPlace5M[s]<-S5M$SCHNM[o[1]]
+  
+  GHCN$EST_POP2000_5M[s]   <-S5M$ES00POP[o[1]]
+  
+  GHCN$DistanceToPlace5M[s]<- dist[o[1]]
+  
+  
+}
+
+
+ 
 
 MissingGWPV4 <- GHCN %>% filter(is.na(GPwV4_15)) %>% select(Station_ID,Longitude,Latitude,Name)
 
@@ -299,8 +305,7 @@ elv <-  raster::extract(Elevation, lonlat)
 GHCN <- GHCN %>% mutate(DEM1km = elv)
 
 
-write.csv(GHCN, "GHCN_POP_Cities_Airports.csv")
-
+ 
 
 
 TOPOGRAPHY <-raster(Topo)
@@ -323,31 +328,6 @@ write.csv(GHCN, "GHCN_POP_Cities_Airport_DEM_Landform.csv")
  
 
 
-UHISHP <- readOGR("uhishp",layer="sdei-global-uhi-2013")
- 
- 
-
-
-LonLat <- GHCN[,c("Longitude","Latitude")]
-coordinates(LonLat)<- ~Longitude+Latitude
-proj4string(LonLat)<-proj4string(UHISHP)
-
-
-UHI <- over(LonLat,UHISHP)
- 
-GHCN <- GHCN %>% mutate(UrbanArea = UHI$SQKM_FINAL,Urban_ES00Pop=UHI$ES00POP,
-                        UrbanDailyMean=UHI$URB_D_MEAN,UrbanNightMean=UHI$BUF_N_MEAN,
-                        BufferDailyMean=UHI$BUF_D_MEAN,BufferNightMean=UHI$BUF_N_MEAN,
-                        UrbanRuralDailyDiff=UHI$D_T_DIFF,UrbanRuralNightDiff=UHI$N_T_DIFF,
-                        UrbanAreaName=UHI$NAME, UrbanLon=UHI$LONGITUDE,UrbanLat=UHI$LATITUDE)
-
-
-
-
-write.csv(GHCN, "GHCN_POP_Cities_Airport_DEM_Landform_LST.csv") 
-
-
-
 LC <- raster(esaland)
 lctype <- read.csv(esatype,header=T, stringsAsFactors = FALSE,sep =";")
 
@@ -364,8 +344,7 @@ GHCN <- merge(GHCN, lctype, by.x= "Landcover", by.y = "NB_LAB", all.x=TRUE)
 
 GHCN <- GHCN %>% mutate(WaterArea=NA, UrbanArea10K=NA)
 
-write.csv(GHCN, "GHCN_POP_Cities_Airport_DEM_Landform_LST_LandCover.csv")
-
+ 
 
 LatDistance <- 111
 dTr <- pi/180
@@ -413,11 +392,7 @@ for(l in 1:nrow(GHCN)){
 ####  Population
 ####  Urban Areas
 ####  Airports
-####  Nightlights
-#CRN <- CRN %>% mutate(Airport_Type=NA,Airport_Lon=NA,Airport_Lat=NA, Airport_Name=NA,Airport_Dist=NA)
-
-write.csv(GHCN, "GHCN_POP_Cities_Airport_DEM_Landform_LST_LandCover_WaterArea.csv")
-
+ 
 
 
 GHCN <- GHCN %>% mutate(GPW10km_15_Density = GPwV4_15_10km/GPWV4_Area10)
@@ -428,16 +403,15 @@ GHCN <- GHCN %>% select(Station_ID,Name,Longitude, Latitude,Elevation,DEM1km,Dis
                       WaterArea,UrbanArea10K,GPwV4_Area,GPwV4_00,GPwV4_05,GPwV4_10,GPwV4_15,GPWV4_Area10,
                       GPwV4_15_10km, Hyde_Area,
                       Hyde1970,Hyde1980,Hyde1990,Hyde2000,Hyde2005,GpwV4_density00,Hyde_density00,
-                      GPW10km_15_Density,EST_POP2000,EST_POP2000_50K,EST_POP2000_300K,DistanceToPlace,DistanceToPlace50K,
-                      DistanceToPlace300K,PopulatedPlace,PopulatedPlace50K,PopulatedPlace300K,Populated_Lon,Populated_Lat,Populated_Lon50K,
-                      Populated_Lat50K,Populated_Lon300K,Populated_Lat300K,  
+                      GPW10km_15_Density,EST_POP2000,EST_POP2000_50K,EST_POP2000_500K,EST_POP2000_1M,
+                      EST_POP2000_5M,DistanceToPlace,DistanceToPlace50K,DistanceToPlace500K,
+                      DistanceToPlace1M,DistanceToPlace5M,PopulatedPlace,PopulatedPlace50K,PopulatedPlace500K,
+                      PopulatedPlace1M,PopulatedPlace5M,
                       Airport_Dist,Airport_Dist2,Airport_Name,Airport_Name2,Airport_Type,Airport_Type2,
                       Airport_Lon,Airport_Lat,Airport_Lon2,Airport_Lat2,Lights)
 
 
-
-
-write.csv(GHCN, "GHCN_Metadata_F1.csv") 
+write.csv(GHCN, "GHCN_V4_Metadata.csv",row.names=FALSE) 
 ####  Add Urban Fraction
 
 
