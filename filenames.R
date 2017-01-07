@@ -32,8 +32,7 @@ gpwV4_15 <- "F:\\Ghcn_v4_Metadata\\gpw-v4-population-count-adjusted-to-2015-unwp
 HydePop <- "F:\\Metadata\\HydeALL\\Population.grd"
 
 GrumpCites <- "F:\\Ghcn_v4_Metadata\\gl_grumpv1_ppoints_csv\\glpv1.csv"
-
-GeoNameCities <-  "F:\\Ghcn_v4_Metadata\\cities1000.txt"
+ 
 
 Airports    <-  "F:\\Ghcn_v4_Metadata\\airports.csv" 
 
@@ -46,13 +45,14 @@ DEM   <-"F:\\Ghcn_v4_Metadata\\ETOPO1_Ice_c_geotiff.tif"
 Topo  <-"F:\\Ghcn_v4_Metadata\\Landform\\Global_Ecophysiography.tif"
 TopoTbl <- "F:\\Ghcn_v4_Metadata\\Landform\\Global_Ecophysiography.tif.vat.dbf"
 
-MAX_LST <-"F:\\Ghcn_v4_Metadata\\sdei-global-summer-lst-2013-global\\sdei-global-summer-lst-2013-global\\sdei-global-summer-lst-2013-day-max-global.tif"
-
-MIN_LST <- "F:\\Ghcn_v4_Metadata\\sdei-global-summer-lst-2013-global\\sdei-global-summer-lst-2013-global\\sdei-global-summer-lst-2013-night-min-global.tif"
-
-UHI_SHP <-"uhishp"
+ 
 
 
 esaland <-"F:\\Ghcn_v4_Metadata\\EsaLandCover\\ESACCI-LC-L4-LCCS-Map-300m-P5Y-2010-v1.6.1.tif\\ESACCI-LC-L4-LCCS-Map-300m-P5Y-2010-v1.6.1.tif"
 
 esatype <-"F:\\Ghcn_v4_Metadata\\EsaLandCover\\ESACCI-LC-Legend.csv"
+
+
+ 
+crnmeta  <- "F:\\Ghcn_v4_Metadata\\CRN_Metadata_Final.csv"
+ghcnmeta <- "F:\\Ghcn_v4_Metadata\\GHCN_V4_Metadata.csv"
