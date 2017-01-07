@@ -17,4 +17,12 @@ library(stringdist)
 library(tidyr)
 library(ggplot2)
 library(plotKML)
+library(ggmap)
+library(purrr)
+library(rasterVis)
+library(RgoogleMaps)
+ 
+ 
+ 
+
  
