@@ -1,0 +1,386 @@
+---
+title: "Global Historical Climate Network v4 Metadata"
+author: "Steven Mosher"
+date: "January 6, 2017"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## GHCN  V4 Metadata
+
+This is anquick look at the summary statistics of the metadata collected for the Global Historical CLimate Network version 4.  Additional details and finalizing charts will be ongoing.   Filenames are currently not portable, but once the git repository is complete, this
+document should be locally excutable provided you have all the right libraries installed.
+
+```{r, echo=FALSE,message=FALSE}
+  source("libraries.R")
+  source("filenames.R")
+  GHCN <- tbl_df(read.csv(ghcnmeta, stringsAsFactors = F))
+```
+
+## Station Locations
+
+ For this excercise ~26000 GHCN stations  were used to create a metadata set. The metadata collected includes: urban area, population, land cover, terrain, distance to airports, and distance from populated places
+ 
+```{r,message=FALSE}
+#na <- get_map(location=c(-180,0,0,90),source="stamen",maptype="watercolor",zoom=3)
+                             
+#f1 <-  ggmap(world)+ 
+#       geom_point(data=GHCN, aes(x=Longitude,y=Latitude),alpha= .5, size=2, color ="blue") + 
+#       xlab("Longitude")+ylab("Latitude") + ggtitle("GHCN Locations")
+#f1
+```
+
+## Local Area Covered by Water
+
+For every site we calculate the percentage of water within a 10km radius using the ESA 300meter Landcover product
+
+```{r, message = FALSE,warning=FALSE}
+f2 <- ggplot(GHCN, aes(100* WaterArea/314))+geom_histogram() +
+      ggtitle("Percentage Water Cover",subtitle = "10 km radius")+
+      xlab("Percentage") + ylab("Station Count")
+f2
+```
+
+## Local Urban Area
+
+For every site we calculate the percentage of urban landcover within a 10km radius using the ESA 300meter Landcover product
+
+```{r, message = FALSE,warning=FALSE}
+f3 <- ggplot(GHCN, aes(100* UrbanArea10K/314))+geom_histogram() +
+      ggtitle("Percentage Urban Cover",subtitle = "10 km radius")+
+      xlab("Percentage") + ylab("Station Count")
+f3
+```
+
+One critical Metric suggested  by  Lee is the urban scale length which is simply the square root of the urban area. 
+
+T.-W. Lee, Heung S. Choi, and Jinoh Lee, “Generalized Scaling of Urban Heat Island Effect and Its Applications for Energy Consumption and Renewable Energy,” Advances in Meteorology, vol. 2014, Article ID 948306, 5 pages, 2014. doi:10.1155/2014/948306
+
+```{r, message = FALSE,warning=FALSE}
+f4 <- ggplot(GHCN, aes(  UrbanArea10K^.5))+geom_histogram() +
+      ggtitle("Urban Cover Scale Length")+
+      xlab("Scale Length") + ylab("Station Count")
+f4
+```
+
+To get a visual sense of the amount of urbanity these figures represent we look at a google map visualization and select stations with the highest amount of urban area 
+
+```{r, message = FALSE,warning=FALSE}
+ GHCN <- GHCN %>% arrange(desc(UrbanArea10K))
+ m  <-  get_map(location=c(lon=GHCN$Longitude[1] ,
+                           lat=GHCN$Latitude[1]),zoom= 13,maptype="satellite",source="google")            
+                
+ f5  <- ggmap(m )+
+        geom_point(data=GHCN,aes(x=Longitude[1],y=Latitude[1]),color="blue",size=2)+
+        ggtitle(GHCN$Name[1], subtitle = paste("Urban Area: ",round(GHCN$UrbanArea10K[1],1)," Sq km ",sep=""))
+ f5
+ 
+ m2  <- get_map(location=c(lon=GHCN$Longitude[2] ,lat=GHCN$Latitude[2]),zoom= 13,
+                maptype="satellite",source="google")
+ f6  <- ggmap(m2 ) + geom_point(data=GHCN,aes(x=Longitude[2],y=Latitude[2]),color="blue",size=2)+
+        ggtitle(GHCN$Name[2],subtitle = paste("Urban Area: ",round(GHCN$UrbanArea10K[2],1)," Sq km ",sep=""))
+                                           
+ f6
+```
+
+## Elevation
+Every site has an Elevation at the exact lite location. In addition the metadata includes the average elevation for the surrounding arc minute ( ~ 2km at the equator). The difference between these can indicate whether a site may be susceptible to cold air drainage. Since there are some stations located on ships and islands the surrounding DEM is negative (bathymetry). Those are culled from the following charts.
+
+
+```{r, message = FALSE,warning=FALSE}
+f7 <- ggplot(GHCN, aes(  Elevation))+geom_histogram() +
+      ggtitle("Station Elevation")+
+      xlab("Elevation (meters) ") + ylab("Station Count")
+
+f7
+
+f8 <- ggplot(filter(GHCN,DEM1km >0), aes(  DEM1km))+geom_histogram() +
+      ggtitle("Station Elevation DEM")+
+      xlab("Elevation (meters) ") + ylab("Station Count")
+
+f8
+
+f9 <- ggplot(filter(GHCN,DEM1km >0), aes(   Elevation-DEM1km))+geom_histogram(bins=60) +
+      xlim(-500,500)+
+      ggtitle("Station Height above local average terrain")+
+      xlab("Difference (meters) ") + ylab("Station Count")
+
+f9
+
+```
+
+## Distance to Coast 
+ The distance to the continental coast is calculated for each station. Negative values represent a point inside of the continent, positive values would indicate an island, bouy or ship location offshore
+
+
+```{r, message = FALSE,warning=FALSE}
+f10 <- ggplot(filter(GHCN,DistancetoCoast < 1 ), aes( DistancetoCoast))+geom_histogram(bins=50) +
+       
+      ggtitle("Station Distance From Coast",subtitle="negative values inland")+
+      xlab("Distance (km) ") + ylab("Station Count")
+
+f10
+
+f11 <- ggplot(filter(GHCN,DistancetoCoast >0  ), aes( DistancetoCoast))+geom_histogram(bins=50) +
+       
+      ggtitle("Station Distance From Coast", subtitle="Positive values for stations off coast")+
+      xlab("Distance (km) ") + ylab("Station Count")
+
+f11 
+
+
+f12 <- ggplot(filter(GHCN,DistancetoCoast >0 & DistancetoCoast <11 ),    aes(DistancetoCoast))+geom_histogram(bins=12) + 
+       
+      ggtitle("Station Distance From Coast", subtitle= "distance less than 10km")+
+      xlab("Distance (km) ") + ylab("Station Count")
+
+f12 
+
+```
+
+## Landform
+
+In addition to the elevation and the local DEM elevation we also collect the land form of the site which indicates whether the site is on smooth plains, hills, valleys. 
+
+```{r, message = FALSE,warning=FALSE}
+f13 <- ggplot(GHCN, aes( EF_LF_Desc,fill=EF_LF_Desc))+geom_bar() +
+      theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))+
+      ggtitle("Landform")+
+      xlab("Landform Type") + ylab("Station Count")
+
+f13
+
+ 
+
+```
+
+## Landclass
+
+We use the ESA 300 meter land class  data ( 2008-2012 epoch) to ascertain the land cover for the sites' location. The average user accuracy is ~74%, depending on the land class.
+
+```{r, message = FALSE,warning=FALSE}
+
+S <- GHCN %>% select(Name, LCCOwnLabel) %>%group_by(LCCOwnLabel)%>%
+         count()
+HighCount <-S$LCCOwnLabel[S$n > median(S$n)]
+
+f14 <- ggplot(filter(GHCN, LCCOwnLabel %in% HighCount), aes( LCCOwnLabel))+geom_bar() +
+      coord_flip()+
+      ggtitle("Land Cover at the site")+
+      xlab("Landform Type") + ylab("Station Count")
+
+f14
+
+f14 <- ggplot(filter(GHCN, !LCCOwnLabel %in% HighCount), aes( LCCOwnLabel))+geom_bar() +
+      coord_flip()+
+      ggtitle("Land Cover at the site")+
+      xlab("Landform Type") + ylab("Station Count")
+
+f14
+
+```
+
+ 
+
+## Gridded Population
+
+For every station we extract the population count from GPW  version 4. The gridded data is a 30 arc second dataset or a 1km resolution at the equator. Since grid cell size changes with latitude other equal area representations (10km)are included as well. For GPW4 we inlcude 4 reference dates, 2000, 2005,2010, and 2015.
+
+```{r, message=FALSE,warning=FALSE}
+POP <- GHCN %>% select(Name,GPwV4_00,GPwV4_05,GPwV4_10,GPwV4_15) %>%
+       gather(Year,Population,starts_with("GP")) %>% mutate(Year=as.factor(Year))  
+   
+f15<- ggplot(filter(POP, Population < 5000 ),  aes(Population,fill=Year))+geom_histogram()+facet_wrap(~Year,nrow=2,ncol=2) +
+      ggtitle("Gridded Population Count", subtitle="Population count Less than 5000")
+f15
+
+f16<- ggplot(filter(POP, Population >= 5000),  aes(Population,fill=Year))+geom_histogram()+facet_wrap(~Year,nrow=2,ncol=2) +
+      ggtitle("Gridded Population Count", subtitle="Population count greater than 5000")
+f16
+
+f17<- ggplot(filter(POP, Population < median(Population,na.rm=TRUE)),  aes(Population,fill=Year))+geom_histogram()+facet_wrap(~Year,nrow=2,ncol=2) +
+      ggtitle("Gridded Population Count", subtitle="Population count Less than Median")
+f17
+
+f18<- ggplot(filter(GHCN,GPwV4_15_10km < median(GPwV4_15_10km,na.rm=TRUE)),  aes(GPwV4_15_10km))+geom_histogram() +
+      ggtitle("Gridded Population Count-less than median",subtitle="10Km radius") 
+       
+f18
+
+f19<- ggplot(filter(GHCN,GPwV4_15_10km >= median(GPwV4_15_10km,na.rm=TRUE)),  aes(GPwV4_15_10km))+geom_histogram(bins=20) +
+      ggtitle("Gridded Population Count- count greater than median",subtitle="10Km radius") 
+       
+f19
+
+f20<- ggplot(filter(GHCN,GPwV4_15_10km < 100000),  aes(GPwV4_15_10km))+geom_histogram() +
+      ggtitle("Gridded Population Count-count less than 100K",subtitle="10Km radius") 
+       
+f20
+
+f21 <-ggplot(filter(GHCN,GPwV4_15-GPwV4_00 >=0),  aes(GPwV4_15-GPwV4_00 ))+
+      geom_histogram(bins=30)+
+      ggtitle("Population Growth 2000-2015")+
+      xlab("Increase")+ylab("Station Count")
+      
+f21
+
+f22 <-ggplot(filter(GHCN,GPwV4_15-GPwV4_00 < 0),  aes(GPwV4_15-GPwV4_00 ))+
+      geom_histogram(bins=30)+
+      ggtitle("Population Decline 2000-2015")+
+      xlab("Increase")+ylab("Station Count")
+      
+f22
+
+```
+
+## Hyde Population
+
+For every station we extract the population count from Hyde  version 3.1. The gridded data is a 5 minute dataset or a 8km resolution at the equator. Since grid cell size changes with latitude other equal area   For Hyde we inlcude 5 reference dates: 1970, 1980,1990, 2000, and 2005.
+
+```{r, message=FALSE,warning=FALSE}
+HYDE <- GHCN %>% select(Name,Hyde1970,Hyde1980,Hyde1990,Hyde2000,Hyde2005) %>%
+       gather(Year,Population,starts_with("Hy")) %>% mutate(Year=as.factor(Year))
+   
+f23<- ggplot(filter(HYDE,Population<median(Population,na.rm=TRUE)),  aes(Population,fill=Year))+geom_histogram()+facet_wrap(~Year,nrow=2,ncol=3) +
+      theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))+
+      ggtitle("Hyde Gridded Population Count-less than median")
+f23
+
+f24<- ggplot(filter(HYDE,Population >= median(Population,na.rm=TRUE) & Population < 1000000),  aes(Population,fill=Year))+geom_histogram()+facet_wrap(~Year,nrow=2,ncol=3) +
+      theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))+
+      ggtitle("Hyde Gridded Population Count-Greater than median")
+f24
+
+f25<- ggplot(filter(HYDE,Population > 1000000),  aes(Population,fill=Year))+geom_histogram()+facet_wrap(~Year,nrow=2,ncol=3) +
+      theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))+
+      ggtitle("Hyde Gridded Population Count-Greater than 1M")
+f25
+ 
+
+f26 <-ggplot(GHCN,  aes(Hyde2005-Hyde1970 ))+
+      geom_histogram()+
+      ggtitle("Population Growth 1970-2005")+
+      xlab("Increase")+ylab("Station Count")
+      
+f26
+```
+
+##  Population Density
+ The population density of the site can be calculated by dividing the population count by the area of the cell which is a function of latitute in addition for the 10km population we cans imply divide by the area of a circle with radius 10km. Subtracting these two can give a crude indication of whether a site is more heavily populated at the exact site location or whether the surrounding area has a higher population. 
+ 
+```{r, message=FALSE,warning=FALSE}
+ 
+ f27 <-ggplot(filter(GHCN,GPW10km_15_Density<500),  aes(GPW10km_15_Density ))+
+      geom_histogram()+
+      ggtitle("Population Density 2015-less 500",subtitle="10km radius")+
+      xlab("Population Density per sqkm")+ylab("Station Count")
+      
+f27
+
+f28 <-ggplot(filter(GHCN,GPW10km_15_Density >=500),  aes(GPW10km_15_Density ))+
+      geom_histogram()+
+      ggtitle("Population Density 2015-greater than 500",subtitle="10km radius")+
+      xlab("Population Density per sqkm")+ylab("Station Count")
+      
+f28
+
+f29 <-ggplot(GHCN,  aes(GPW10km_15_Density-(GPwV4_15/GPwV4_Area) ))+
+      geom_histogram()+
+      ggtitle("2015 Population Density Difference",subtitle="10km -Site")+
+      xlab("Density Difference")+ylab("Station Count")
+      
+f29
+
+
+
+```
+
+## Isolation from Urban Areas
+ In addition the site characteristics and immediate vincity, we also calculate the distance from the site to areas of concentrated population. Several measures are provided. The distance to the closest populated place; the distance to the closest place with a population (circ 2000) greater than 50,000; the distance to the closest place with a population (circ 2000) greater than 500,000;the distance to the closest place with a population (circ 2000) greater than 1 Million;the distance to the closest place with a population (circ 2000) greater than 5M. For reference, "Simulations of the London urban heat island" S. I. Bohnenstengel had results that indicated UHI could advect up to 40km under certain conditions, and Basset ("Observations of urban heat island advection from a high-density monitoring network") indicated advection under certain conditions extending to at least 15km from Birmingham ( Population 1M). Finally, Brandsma ("EMPIRICAL ESTIMATION OF THE EFFECT OF URBAN HEAT ADVECTION ON THE TEMPERATURE SERIES OF DE BILT (THE NETHERLANDS)"), indicates that roughly 10% of the warming seen at De Bilt or .1C out of 1C, is due to advection of UHI from the surrounding cities. Utrecht, the largest city at ~250K, is around 2km  from the site and one smaller town (60K) is ~3km from the site.
+
+```{r, message=FALSE,warning=FALSE}
+
+DIST <- GHCN %>% select(Name,DistanceToPlace50K,DistanceToPlace500K,DistanceToPlace1M,DistanceToPlace5M) %>%
+  gather(PlaceSize,Distance, starts_with("DistanceToPlace")) %>% 
+  mutate(PlaceSize=str_replace(PlaceSize,"DistanceToPlace","")) %>%
+  mutate(PlaceSize=as.factor(PlaceSize)) %>%filter(Distance < 125)
+
+f30 <- ggplot(DIST,  aes(Distance,fill=PlaceSize))+geom_histogram(bins=50)+
+       facet_wrap(~PlaceSize,nrow=2,ncol=2,scales="free_y")+
+       ylab("Station Count")+
+       ggtitle("Isolation From Urban Centers")
+f30
+```
+
+## Distance to Airports
+
+For every site we calculated the distance to the closests airport. There are three type of airports: small, medium and large. Small and medium size airports are typically single runway installations.
+
+```{r, message= FALSE,warning=FALSE}
+
+
+ 
+f31  <-ggplot(GHCN,  aes(Airport_Dist,fill=Airport_Type ))+
+  geom_histogram(bins=60,position="stack")+
+  ggtitle("Distance to Nearest Airport",subtitle="small medium and large airports")+
+  xlab("Distance in km")+ylab("Station Count")
+
+f31
+
+f32  <-ggplot(GHCN,  aes(Airport_Dist2,fill=Airport_Type2 ))+
+  geom_histogram(bins=60,position="stack")+
+  ggtitle("Distance to Nearest Airport",subtitle="medium and large airports")+
+  xlab("Distance in km")+ylab("Station Count")
+
+f32
+
+f33  <-ggplot(filter(GHCN, Airport_Dist < 10),  aes(Airport_Dist,fill=Airport_Type ))+
+  geom_histogram(bins=60,position="stack")+
+  ggtitle("Distance to Nearest Airport",subtitle="small medium and large airports")+
+  xlab("Distance in km")+ylab("Station Count")
+
+f33
+
+f34  <-ggplot(filter(GHCN, Airport_Dist2 < 10),  aes(Airport_Dist2,fill=Airport_Type2 ))+
+  geom_histogram(bins=60,position="stack")+
+  ggtitle("Distance to Nearest Airport",subtitle="medium and large airports")+
+  xlab("Distance in km")+ylab("Station Count")
+
+f34
+
+ 
+```
+
+## Nightlights
+
+```{r, message = FALSE,warning=FALSE}
+
+
+f35  <-ggplot(GHCN,  aes(Lights))+
+  geom_histogram(bins=60)+
+  ggtitle("Radiance Calibrated Nightlights") +
+  xlab("Lights")+ylab("Station Count")
+
+f35
+
+f36  <-ggplot(filter(GHCN, Lights <  median(Lights,na.rm=TRUE)),  aes(Lights))+
+  geom_histogram(bins=60)+
+  ggtitle("Radiance Calibrated Nightlights") +
+  xlab("Lights")+ylab("Station Count")
+
+f36
+
+f36 <- ggplot(GHCN, aes(x=GPwV4_10/GPwV4_Area,y=Lights))+geom_point()+
+       ggtitle("Lights versus Population Density", subtitle= "circa 2010")+
+       xlab("Site Population Density")
+
+f36
+
+```
+
+
+
+ 
