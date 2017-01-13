@@ -125,25 +125,25 @@ for(s in 1:nrow(CRN)){
   
 }
 
-S500 <- Settlement[Settlement$ES00POP > 499999,]
+S250 <- Settlement[Settlement$ES00POP > 249999,]
 
 
-CRN <- CRN %>% mutate(PopulatedPlace500K=NA,  EST_POP2000_500K=NA,DistanceToPlace500K=NA)
+CRN <- CRN %>% mutate(PopulatedPlace250K=NA,  EST_POP2000_250K=NA,DistanceToPlace250K=NA)
 
 
 for(s in 1:nrow(CRN)){
   
   print(s)
   icoords <- cbind(CRN$Longitude[s],CRN$Latitude[s])
-  bcoords <- cbind(S500$LONGITUDE,S500$LATITUDE)
+  bcoords <- cbind(S250$LONGITUDE,S250$LATITUDE)
   dist    <- spDistsN1(bcoords,icoords,longlat=TRUE)
   o       <-order(dist,decreasing=FALSE)
   
-  CRN$PopulatedPlace500K[s]<-S500$SCHNM[o[1]]
+  CRN$PopulatedPlace250K[s]<-S250$SCHNM[o[1]]
    
-  CRN$EST_POP2000_500K[s]   <-S500$ES00POP[o[1]]
+  CRN$EST_POP2000_250K[s]   <-S250$ES00POP[o[1]]
   
-  CRN$DistanceToPlace500K[s]<- dist[o[1]]
+  CRN$DistanceToPlace250K[s]<- dist[o[1]]
   
   
 }
@@ -200,7 +200,7 @@ ARP <- read.csv(Airports,stringsAsFactors=F)
 
 ###  eliminate seaplace, heliport, balloonport, and closed
 
-ARP <- ARP[ARP$type %in% c("large_airport","medium_airport","small_airport"),]
+ARP <- ARP[ARP$type %in% c("large_airport","medium_airport","small_airport","closed"),]
 
 
 CRN <- CRN %>% mutate(Airport_Type=NA,Airport_Lon=NA,Airport_Lat=NA, Airport_Name=NA,Airport_Dist=NA)
@@ -228,7 +228,7 @@ for(s in 1:nrow(CRN)){
 }
 
 
-ARP2<- ARP[ARP$type %in% c("large_airport","medium_airport"),]
+ARP2<- ARP[ARP$type %in% c("large_airport"),]
 
 
 CRN <- CRN %>% mutate(Airport_Type2=NA,Airport_Lon2=NA,Airport_Lat2=NA, Airport_Name2=NA,Airport_Dist2=NA)
@@ -255,6 +255,61 @@ for(s in 1:nrow(CRN)){
   
 }
 
+ARP3<- ARP[ARP$type %in% c("medium_airport"),]
+
+
+CRN <- CRN %>% mutate(Airport_Type3=NA,Airport_Lon3=NA,Airport_Lat3=NA, Airport_Name3=NA,Airport_Dist3=NA)
+
+#####   Add Airports
+
+
+for(s in 1:nrow(CRN)){
+  
+  print(s)
+  icoords <- cbind(CRN$Longitude[s],CRN$Latitude[s])
+  
+  bcoords <- cbind(ARP3$longitude_deg,ARP3$latitude_deg)
+  dist    <- spDistsN1(bcoords,icoords,longlat=TRUE)
+  o       <-order(dist,decreasing=FALSE)
+  
+  
+  CRN$Airport_Type3[s]<-ARP3$type[o[1]]
+  CRN$Airport_Lon3[s]<-ARP3$longitude_deg[o[1]]
+  CRN$Airport_Lat3[s]<-ARP3$latitude_deg[o[1]]
+  CRN$Airport_Name3[s]<- ARP3$name[o[1]]
+  CRN$Airport_Dist3[s]<- dist[o[1]]
+  
+  
+}
+
+ARP4<- ARP[ARP$type %in% c("small_airport"),]
+
+
+CRN <- CRN %>% mutate(Airport_Type4=NA,Airport_Lon4=NA,Airport_Lat4=NA, Airport_Name4=NA,Airport_Dist4=NA)
+
+#####   Add Airports
+
+
+for(s in 1:nrow(CRN)){
+  
+  print(s)
+  icoords <- cbind(CRN$Longitude[s],CRN$Latitude[s])
+  
+  bcoords <- cbind(ARP4$longitude_deg,ARP4$latitude_deg)
+  dist    <- spDistsN1(bcoords,icoords,longlat=TRUE)
+  o       <-order(dist,decreasing=FALSE)
+  
+  
+  CRN$Airport_Type4[s]<-ARP4$type[o[1]]
+  CRN$Airport_Lon4[s]<-ARP4$longitude_deg[o[1]]
+  CRN$Airport_Lat4[s]<-ARP4$latitude_deg[o[1]]
+  CRN$Airport_Name4[s]<- ARP4$name[o[1]]
+  CRN$Airport_Dist4[s]<- dist[o[1]]
+  
+  
+}
+
+
 
 DistCoast <- raster(Coast)
 
@@ -275,7 +330,7 @@ Elevation <- raster(DEM)
 
 elv <-  raster::extract(Elevation, lonlat)
 
-CRN <- CRN %>% mutate(DEM1km = elv)
+CRN <- CRN %>% mutate(DEM2km = elv)
 
  
 
@@ -351,16 +406,17 @@ for(l in 1:nrow(CRN)){
 
 CRN <- CRN %>% mutate(GPW10km_15_Density = GPwV4_15_10km/GPWV4_Area10)
 
-CRN <- CRN %>% select(Station_ID,Name,Longitude, Latitude,Elevation,DEM1km,DistancetoCoast, LCCOwnLabel,EF_LF_Desc,
+CRN <- CRN %>% select(Station_ID,Name,Longitude, Latitude,Elevation,DEM2km,DistancetoCoast, LCCOwnLabel,EF_LF_Desc,
                       WaterArea,UrbanArea10K,GPwV4_Area,GPwV4_00,GPwV4_05,GPwV4_10,GPwV4_15,GPWV4_Area10,
                       GPwV4_15_10km, Hyde_Area,
                       Hyde1970,Hyde1980,Hyde1990,Hyde2000,Hyde2005,GpwV4_density00,Hyde_density00,
-                      GPW10km_15_Density,EST_POP2000,EST_POP2000_50K,EST_POP2000_500K,EST_POP2000_1M,
-                      EST_POP2000_5M,DistanceToPlace,DistanceToPlace50K,DistanceToPlace500K,
-                      DistanceToPlace1M,DistanceToPlace5M,PopulatedPlace,PopulatedPlace50K,PopulatedPlace500K,
-                      PopulatedPlace1M,PopulatedPlace5M,
-                      Airport_Dist,Airport_Dist2,Airport_Name,Airport_Name2,Airport_Type,Airport_Type2,
-                      Airport_Lon,Airport_Lat,Airport_Lon2,Airport_Lat2,Lights)
+                      GPW10km_15_Density,EST_POP2000,EST_POP2000_50K,EST_POP2000_250K,EST_POP2000_1M,
+                      EST_POP2000_5M,DistanceToPlace,DistanceToPlace50K,DistanceToPlace250K,
+                      DistanceToPlace1M,DistanceToPlace5M,PopulatedPlace,PopulatedPlace50K,PopulatedPlace250K,
+                      PopulatedPlace1M,PopulatedPlace5M,Airport_Dist,Airport_Dist2,
+                      Airport_Dist3,Airport_Dist4,Airport_Name,Airport_Name2, Airport_Name3,Airport_Name4,
+                      Airport_Type,Airport_Type2,Airport_Type3,Airport_Type4,Airport_Lon,Airport_Lat,
+                      Airport_Lon2,Airport_Lat2,Airport_Lon3,Airport_Lat3,Airport_Lon3,Airport_Lat3,Lights)
 
 
 write.csv(CRN, "CRN_Metadata_Final.csv") 
